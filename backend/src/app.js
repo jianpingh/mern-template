@@ -1,10 +1,12 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const cors = require('cors');
 const app = express();
 const PORT = 5000;
 
 // Middleware
 app.use(express.json());
+app.use(cors()); // 添加这一行以启用CORS
 
 // MongoDB connection
 mongoose.connect('mongodb://admin:123456@47.98.120.26:27017/admin', {
