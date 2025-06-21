@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { request } from '../utils/request';
+
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const Dashboard = () => {
   const [students, setStudents] = useState([]);
@@ -7,10 +10,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const token = localStorage.getItem('token'); // Retrieve token from localStorage
-        const response = await fetch('http://localhost:5000/dashboard/students', {
-          headers: { 'Authorization': `Bearer ${token}` },
-        });
+        const response = await request(`${API_BASE_URL}/dashboard/students`);
         const data = await response.json();
         setStudents(data);
       } catch (error) {
@@ -23,12 +23,10 @@ const Dashboard = () => {
   const handleAddStudent = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token'); // Retrieve token from localStorage
-      const response = await fetch('http://localhost:5000/dashboard/students', {
+      const response = await request(`${API_BASE_URL}/dashboard/students`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` // Include token in Authorization header
         },
         body: JSON.stringify({
           name: newStudent.name,
