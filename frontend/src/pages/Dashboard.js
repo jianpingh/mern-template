@@ -22,6 +22,21 @@ const Dashboard = () => {
 
   const handleAddStudent = async (e) => {
     e.preventDefault();
+    
+    // 非空校验
+    if (!newStudent.name.trim()) {
+      alert('请输入学生姓名');
+      return;
+    }
+    if (!newStudent.age || newStudent.age <= 0) {
+      alert('请输入有效的年龄');
+      return;
+    }
+    if (!newStudent.grade.trim()) {
+      alert('请输入学生年级');
+      return;
+    }
+    
     try {
       const response = await request(`${API_BASE_URL}/dashboard/students`, {
         method: 'POST',
@@ -29,20 +44,29 @@ const Dashboard = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name: newStudent.name,
-          age: newStudent.age,
-          grade: newStudent.grade
+          name: newStudent.name.trim(),
+          age: parseInt(newStudent.age),
+          grade: newStudent.grade.trim()
         }),
       });
       if (response.ok) {
         const addedStudent = await response.json();
         setStudents([...students, addedStudent]);
         setNewStudent({ name: '', age: '', grade: '' });
+        alert('学生添加成功');
       } else {
-        alert('Failed to add student');
+        const errorData = await response.json();
+        if (errorData.errors && errorData.errors.length > 0) {
+          // 显示详细的验证错误
+          const errorMessages = errorData.errors.map(error => error.msg).join('\n');
+          alert(`添加失败:\n${errorMessages}`);
+        } else {
+          alert(`添加失败: ${errorData.message || '未知错误'}`);
+        }
       }
     } catch (error) {
       console.error('Error adding student:', error);
+      alert('网络错误，请稍后重试');
     }
   };
 

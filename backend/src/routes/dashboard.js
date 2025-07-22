@@ -1,7 +1,31 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const { body } = require('express-validator');
 const router = express.Router();
 const dashboardController = require('../controllers/dashboardController');
+
+const SECRET_KEY = 'your_secret_key';
+
+// 验证规则
+const studentValidationRules = () => {
+  return [
+    body('name')
+      .notEmpty()
+      .withMessage('姓名不能为空')
+      .isLength({ min: 2, max: 50 })
+      .withMessage('姓名长度必须在2-50个字符之间')
+      .trim(),
+    body('age')
+      .isInt({ min: 1, max: 150 })
+      .withMessage('年龄必须是1-150之间的整数'),
+    body('grade')
+      .notEmpty()
+      .withMessage('年级不能为空')
+      .isLength({ min: 1, max: 20 })
+      .withMessage('年级长度必须在1-20个字符之间')
+      .trim()
+  ];
+};
 
 const SECRET_KEY = 'your_secret_key';
 
@@ -55,6 +79,6 @@ const authenticateToken = (req, res, next) => {
 router.get('/students', authenticateToken, dashboardController.getStudents);
 
 // Add a new student
-router.post('/students', authenticateToken, dashboardController.addStudent);
+router.post('/students', authenticateToken, studentValidationRules(), dashboardController.addStudent);
 
 module.exports = router;
