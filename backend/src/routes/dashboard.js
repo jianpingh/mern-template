@@ -1,6 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const { body } = require('express-validator');
+const logger = require('../config/logger');
 const router = express.Router();
 const dashboardController = require('../controllers/dashboardController');
 
@@ -26,8 +27,6 @@ const studentValidationRules = () => {
       .trim()
   ];
 };
-
-const SECRET_KEY = 'your_secret_key';
 
 /**
  * @swagger
@@ -61,16 +60,30 @@ const SECRET_KEY = 'your_secret_key';
 const authenticateToken = (req, res, next) => {
   const token = req.headers['authorization']?.split(' ')[1];
   if (!token) {
-    console.log('Token missing');
+    logger.warn('Authentication failed: Token missing', {
+      requestId: req.requestId,
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    });
     return res.status(403).json({ message: 'Token required' });
   }
 
   jwt.verify(token, SECRET_KEY, (err, user) => {
     if (err) {
-      console.log('Token verification error:', err);
+      logger.warn('Authentication failed: Invalid token', {
+        requestId: req.requestId,
+        error: err.message,
+        ip: req.ip
+      });
       return res.status(403).json({ message: 'Invalid token' });
     }
+    
     req.user = user;
+    logger.info('Authentication successful', {
+      requestId: req.requestId,
+      userId: user.id,
+      username: user.username
+    });
     next();
   });
 };
